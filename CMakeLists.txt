@@ -3,4 +3,7 @@ project(Taller2)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(Taller2 main.cpp)
+add_executable(Taller2 main.cpp
+        Node.h
+        SparseMatrix.cpp
+        SparseMatrix.h)
