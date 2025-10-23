@@ -39,7 +39,7 @@ vector<pair<int,int>> generarCoordenadasNoUsadas(int N, int filas, int columnas,
 
 // FUNCIÓN PARA MEDIR TIEMPO DE INSERCIÓN
 // Inserta N pares (x,y) con valores aleatorios en una SparseMatrix nueva
-double medir_add(int N, int filas, int columnas) {
+double medir_add(int N, int filas, int columnas, int& densidadOut) {
     set<pair<int,int>> usadas;
     auto coords = generarCoordenadasUnicas(N, filas, columnas, usadas);
     SparseMatrix M;
@@ -50,6 +50,7 @@ double medir_add(int N, int filas, int columnas) {
         M.add(valor, c.first, c.second);
     }
     clock_t fin = clock();
+    densidadOut = M.density();
     return (double(fin - ini) * 1000.0) / CLOCKS_PER_SEC;
 }
 
@@ -119,8 +120,10 @@ int main() {
         // Densidad baja (<40%)
         int filas_baja = N * 2;
         int cols_baja  = N * 2;
+        int densidad;
         std::cout << "[N=" << N << "] Densidad baja (<40%)\n";
-        std::cout << "  ADD: "              << medir_add(N, filas_baja, cols_baja)<<" ms\n";
+        std::cout << "  ADD: " << medir_add(N, filas_baja, cols_baja, densidad)
+          << " ms (densidad " << densidad << "%)\n";
         std::cout << "  GET existentes: "   << medir_get_existentes(N, filas_baja, cols_baja)<<" ms\n";
         std::cout << "  GET inexistentes: " << medir_get_inexistentes(N, filas_baja, cols_baja)<<" ms\n";
         // Multiplicación: B tiene filas = columnasA
@@ -130,7 +133,8 @@ int main() {
         int lado = (int)std::ceil(std::sqrt(double(N) / 0.75)); // asegura ≳75%
         if (lado < 1) lado = 1;
         std::cout << "[N=" << N << "] Densidad alta (>70%)\n";
-        std::cout << "  ADD: "              << medir_add(N, lado, lado)<<" ms\n";
+        std::cout << "  ADD: " << medir_add(N, lado, lado, densidad)
+          << " ms (densidad " << densidad << "%)\n";
         std::cout << "  GET existentes: "   << medir_get_existentes(N, lado, lado)<<" ms\n";
         std::cout << "  GET inexistentes: " << medir_get_inexistentes(N, lado, lado)<<" ms\n";
         std::cout << "  MULTIPLY: "         << medir_multiply(N, lado, lado, lado)<<" ms\n";

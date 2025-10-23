@@ -13,7 +13,7 @@ void SparseMatrix::add(int value, int xPos, int yPos) {
         return;
     }
     if (start == nullptr) {
-        start = new Node(value, xPos, yPos);
+        start  = new Node(xPos, yPos, value);
         return;
     }
 
@@ -32,7 +32,7 @@ void SparseMatrix::add(int value, int xPos, int yPos) {
     }
 
     // Si no se encontró la posición, agregar el nuevo nodo
-    Node* newNode = new Node(value, xPos, yPos);
+    Node* newNode = new Node(xPos, yPos, value);
 
     if (previous == nullptr) {
         // Si no hay nodos, agregamos al principio
