@@ -8,16 +8,41 @@ SparseMatrix::SparseMatrix() {
 
 // FUNCIÓN PARA AGREGAR UN VALOR
 void SparseMatrix::add(int value, int xPos, int yPos) {
+    if (value == 0) {
+        remove(xPos, yPos);
+        return;
+    }
     if (start == nullptr) {
         start = new Node(value, xPos, yPos);
         return;
     }
+
     Node* current = start;
-    while (current->next != nullptr) {
+    Node* previous = nullptr;
+
+    // Buscar la posición correcta o si ya existe el nodo
+    while (current != nullptr) {
+        if (current->xPos == xPos && current->yPos == yPos) {
+            // Si el nodo ya existe, actualizamos su valor
+            current->value = value;
+            return;
+        }
+        previous = current;
         current = current->next;
     }
-    // Agregar el nuevo nodo al final de la lista
-    current->next = new Node(value, xPos, yPos);
+
+    // Si no se encontró la posición, agregar el nuevo nodo
+    Node* newNode = new Node(value, xPos, yPos);
+
+    if (previous == nullptr) {
+        // Si no hay nodos, agregamos al principio
+        newNode->next = start;
+        start = newNode;
+    } else {
+        // Insertamos entre previous y current
+        previous->next = newNode;
+        newNode->next = current;
+    }
 }
 
 
@@ -72,42 +97,51 @@ void SparseMatrix::printStoredValues() {
 
 // FUNCIÓN PARA CALCULAR DENSIDAD DE LA MATRIZ
 int SparseMatrix::density() {
-    int contador = 0;  // Contador de elementos no nulos
-    int maxSize = 0;  // (determinado por la coordenada más alta)
+    if (start == nullptr) return 0;
 
-    Node* current = start;
-    while (current != nullptr) {
-        contador++;
-        if (current->xPos > maxSize) maxSize = current->xPos;
-        if (current->yPos > maxSize) maxSize = current->yPos;
-        current = current->next;
+    int conteoNoCero = 0;
+    int maxX = 0, maxY = 0;
+
+    Node* actual = start;
+    while (actual != nullptr) {
+        conteoNoCero++;
+        if (actual->xPos > maxX) maxX = actual->xPos;
+        if (actual->yPos > maxY) maxY = actual->yPos;
+        actual = actual->next;
     }
 
-    return (contador / (maxSize * maxSize));  // Densidad = elementos no nulos / tamaño máximo
+    long long filas = static_cast<long long>(maxX) + 1;
+    long long columnas = static_cast<long long>(maxY) + 1;
+    long long area = filas * columnas;
+    if (area <= 0) return 0;
+
+    int porcentaje = static_cast<int>((conteoNoCero * 100LL) / area);
+    return porcentaje;
 }
 
 
 // FUNCIÓN PARA MULTIPLICAR LAS MATRICES
 SparseMatrix* SparseMatrix::multiply(SparseMatrix* second) {
-    SparseMatrix* result = new SparseMatrix(); // Crear una nueva matriz vacía para almacenar el resultado de la multiplicación
+    if (second == nullptr) return nullptr;
 
-    Node* current1 = start;
+    SparseMatrix* resultado = new SparseMatrix();
 
-    while (current1 != nullptr) {
-        Node* current2 = second->start; // Recorrer todos los nodos no nulos de la segunda matriz
+    // Recorremos A
+    for (Node* a = start; a != nullptr; a = a->next) {
+        for (Node* b = second->start; b != nullptr; b = b->next) {
+            if (b->xPos == a->yPos) {
+                int i = a->xPos;
+                int k = b->yPos;
+                int valorParcial = a->value * b->value;
 
-        while (current2 != nullptr) {
-            // Verificamos coordenadas
-            if (current1->yPos == current2->xPos) {
-                int newValue = current1->value * current2->value;
-                result->add(newValue, current1->xPos, current2->yPos);
+                // Acumular en C(i, k)
+                int anterior = resultado->get(i, k);
+                resultado->add(anterior + valorParcial, i, k);
             }
-            current2 = current2->next;
         }
-        current1 = current1->next;
     }
 
-    return result;
+    return resultado;
 }
 
 
